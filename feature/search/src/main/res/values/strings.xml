@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_menu">Menu</string>
+    <string name="search_logo_stack">stack</string>
+    <string name="search_logo_overflow">overflow</string>
+    <string name="search_placeholder">Search…</string>
+    <string name="search_question_title_prefix">Q: %1$s</string>
+    <string name="search_answers_count">%1$d answers</string>
+    <string name="search_votes_count">%1$d votes</string>
+    <string name="search_views_count">%1$d views</string>
+    <string name="search_asked_by_prefix">asked %1$s by</string>
+</resources>

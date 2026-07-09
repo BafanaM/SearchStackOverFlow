@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="detail_back">Back</string>
+    <string name="detail_viewed_times">Viewed %1$d times</string>
+    <string name="detail_accepted_answer">Accepted answer</string>
+    <string name="detail_answer_votes_label">Votes</string>
+    <string name="detail_answers_count">%1$d Answers</string>
+    <string name="sort_active">Active</string>
+    <string name="sort_oldest">Oldest</string>
+    <string name="sort_votes">Votes</string>
+</resources>
