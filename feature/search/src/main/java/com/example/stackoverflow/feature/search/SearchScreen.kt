@@ -13,8 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.stackoverflow.core.network.model.Question
 import com.example.stackoverflow.core.ui.theme.Dimens
+import com.example.stackoverflow.core.ui.theme.StackOverflowBlack
 import com.example.stackoverflow.core.ui.theme.StackOverflowBlue
 import com.example.stackoverflow.core.ui.theme.StackOverflowGray
 import com.example.stackoverflow.core.ui.theme.StackOverflowOrange
@@ -74,7 +74,7 @@ fun SearchScreen(
                         )
                         Text(
                             text = stringResource(R.string.search_logo_stack),
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             modifier = Modifier.padding(start = Dimens.SpacingXS),
                         )
                         Text(
@@ -140,12 +140,13 @@ private fun QuestionRow(
         verticalAlignment = Alignment.Top,
     ) {
         Icon(
-            imageVector = Icons.Filled.CheckCircle,
+            imageVector = Icons.Filled.Check,
             contentDescription = null,
             tint = StackOverflowOrange,
             modifier = Modifier
-                .padding(top = Dimens.SpacingXXS, end = Dimens.SpacingS)
-                .size(Dimens.CheckIconSize),
+                .padding(end = Dimens.SpacingS)
+                .size(Dimens.CheckIconSize)
+                .align(Alignment.CenterVertically),
         )
 
         Column(modifier = Modifier.weight(1f)) {
@@ -170,14 +171,16 @@ private fun QuestionRow(
                     }
                 },
                 style = MaterialTheme.typography.labelSmall,
-                color = StackOverflowGray,
+                color = StackOverflowBlack,
                 modifier = Modifier.padding(top = Dimens.SpacingS),
             )
         }
 
         Column(
-            horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(start = Dimens.SpacingS),
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .padding(start = Dimens.SpacingS)
+                .align(Alignment.CenterVertically),
         ) {
             Text(
                 text = stringResource(R.string.search_answers_count, question.answerCount),
@@ -197,11 +200,12 @@ private fun QuestionRow(
         }
 
         Icon(
-            imageVector = Icons.Filled.ChevronRight,
+            painter = painterResource(R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = Color.Gray,
+            tint = Color.Black,
             modifier = Modifier
                 .padding(start = Dimens.SpacingXXS)
+                .size(Dimens.ChevronIconSize)
                 .align(Alignment.CenterVertically),
         )
     }

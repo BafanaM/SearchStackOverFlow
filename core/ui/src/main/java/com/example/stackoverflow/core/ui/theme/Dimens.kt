@@ -13,6 +13,7 @@ object Dimens {
     val TagCornerRadius = 4.dp
 
     val LogoIconSize = 22.dp
-    val CheckIconSize = 22.dp
+    val CheckIconSize = 32.dp
+    val ChevronIconSize = 32.dp
     val SearchBarCornerRadius = 6.dp
 }
