@@ -2,6 +2,8 @@ package com.example.stackoverflow.core.network.di
 
 import com.example.stackoverflow.core.network.connectivity.ConnectivityNetworkMonitor
 import com.example.stackoverflow.core.network.connectivity.NetworkMonitor
+import com.example.stackoverflow.core.network.repository.DataStoreRecentSearchesRepository
+import com.example.stackoverflow.core.network.repository.RecentSearchesRepository
 import com.example.stackoverflow.core.network.repository.StackOverflowRepository
 import com.example.stackoverflow.core.network.repository.StackOverflowRepositoryImpl
 import dagger.Binds
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindNetworkMonitor(
         impl: ConnectivityNetworkMonitor,
     ): NetworkMonitor
+
+    @Binds
+    @Singleton
+    abstract fun bindRecentSearchesRepository(
+        impl: DataStoreRecentSearchesRepository,
+    ): RecentSearchesRepository
 }

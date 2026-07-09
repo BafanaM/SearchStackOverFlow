@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_network_title">No Internet Connection</string>
+    <string name="no_network_message">Please check your network connection and try again.</string>
+    <string name="no_network_retry">Retry</string>
+    <string name="no_network_dismiss">Dismiss</string>
+</resources>

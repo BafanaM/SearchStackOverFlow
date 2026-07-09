@@ -1,6 +1,9 @@
 package com.example.stackoverflow.feature.detail
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -17,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,36 +28,70 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.stackoverflow.core.network.model.Answer
 import com.example.stackoverflow.core.network.model.AnswerSort
 import com.example.stackoverflow.core.network.model.Question
+import com.example.stackoverflow.core.ui.components.FullScreenError
+import com.example.stackoverflow.core.ui.components.FullScreenLoading
+import com.example.stackoverflow.core.ui.components.NoNetworkDialog
 import com.example.stackoverflow.core.ui.theme.Dimens
 import com.example.stackoverflow.core.ui.theme.StackOverflowOrange
 import com.example.stackoverflow.core.ui.theme.StackOverflowTheme
 
+@Composable
+fun DetailRoute(
+    onBackClick: () -> Unit,
+    viewModel: DetailViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    DetailScreen(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onSortSelected = viewModel::onSortSelected,
+        onRetry = viewModel::retry,
+        onMoreInfoClick = {
+            val link = (uiState as? DetailUiState.Success)?.question?.link
+            if (link != null) {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
+            }
+        },
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(
-    question: Question,
-    answers: List<Answer>,
-    selectedSort: AnswerSort,
-    onSortSelected: (AnswerSort) -> Unit,
+private fun DetailScreen(
+    uiState: DetailUiState,
     onBackClick: () -> Unit,
+    onSortSelected: (AnswerSort) -> Unit,
+    onRetry: () -> Unit,
+    onMoreInfoClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {},
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.detail_more_info),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable(onClick = onMoreInfoClick),
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -65,13 +103,24 @@ fun DetailScreen(
             )
         },
     ) { innerPadding ->
-        DetailContent(
-            question = question,
-            answers = answers,
-            selectedSort = selectedSort,
-            onSortSelected = onSortSelected,
-            modifier = Modifier.padding(innerPadding),
-        )
+        when (uiState) {
+            is DetailUiState.Loading -> FullScreenLoading(modifier = Modifier.padding(innerPadding))
+
+            is DetailUiState.Error -> FullScreenError(
+                message = uiState.message,
+                modifier = Modifier.padding(innerPadding),
+            )
+
+            is DetailUiState.NoNetwork -> NoNetworkDialog(onDismiss = onBackClick, onRetry = onRetry)
+
+            is DetailUiState.Success -> DetailContent(
+                question = uiState.question,
+                answers = uiState.answers,
+                selectedSort = uiState.sort,
+                onSortSelected = onSortSelected,
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
     }
 }
 
@@ -92,16 +141,13 @@ private fun DetailContent(
                 modifier = Modifier.padding(top = Dimens.SpacingS),
             )
             Text(
-                text = stringResource(R.string.detail_viewed_times, question.viewCount),
+                text = "Asked ${formatDateTime(question.createdAtEpochSeconds)}   " +
+                    stringResource(R.string.detail_viewed_times, question.viewCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = Dimens.SpacingXS),
             )
-            Text(
-                text = question.bodyHtml,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = Dimens.SpacingM),
-            )
+            HtmlText(html = question.bodyHtml, modifier = Modifier.padding(top = Dimens.SpacingM))
 
             if (question.tags.isNotEmpty()) {
                 FlowRow(
@@ -116,6 +162,7 @@ private fun DetailContent(
                 name = question.ownerName,
                 avatarUrl = question.ownerAvatarUrl,
                 reputation = question.ownerReputation,
+                dateLabel = "Asked ${formatDateTime(question.createdAtEpochSeconds)}",
                 modifier = Modifier.padding(top = Dimens.SpacingL, bottom = Dimens.SpacingS),
             )
 
@@ -176,11 +223,12 @@ private fun AnswerItem(answer: Answer) {
         }
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = answer.bodyHtml, style = MaterialTheme.typography.bodyMedium)
+            HtmlText(html = answer.bodyHtml)
             OwnerRow(
                 name = answer.ownerName,
                 avatarUrl = answer.ownerAvatarUrl,
                 reputation = answer.ownerReputation,
+                dateLabel = "Answered ${formatDateTime(answer.createdAtEpochSeconds)}",
                 modifier = Modifier.padding(top = Dimens.SpacingM, bottom = Dimens.SpacingXS),
             )
         }
@@ -192,24 +240,28 @@ private fun OwnerRow(
     name: String,
     avatarUrl: String?,
     reputation: Long,
+    dateLabel: String,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        if (avatarUrl != null) {
-            AsyncImage(
-                model = avatarUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(Dimens.AvatarSize)
-                    .clip(CircleShape),
-            )
-        }
-        Column(modifier = Modifier.padding(start = Dimens.SpacingS)) {
-            Text(text = name, style = MaterialTheme.typography.bodySmall)
-            Text(text = "$reputation", style = MaterialTheme.typography.labelSmall)
+    Column(modifier = modifier) {
+        Text(text = dateLabel, style = MaterialTheme.typography.labelSmall)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = Dimens.SpacingXS),
+        ) {
+            if (avatarUrl != null) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(Dimens.AvatarSize)
+                        .clip(CircleShape),
+                )
+            }
+            Column(modifier = Modifier.padding(start = Dimens.SpacingS)) {
+                Text(text = name, style = MaterialTheme.typography.bodySmall)
+                Text(text = "$reputation", style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
 }
@@ -238,9 +290,9 @@ private fun TagChip(tag: String) {
 private fun DetailScreenPreview() {
     val sampleQuestion = Question(
         id = 1L,
-        title = "Presenting",
-        bodyHtml = "Body body body...",
-        tags = listOf("android", "viewcontroller", "modalviewcontroller"),
+        title = "Presenting modal in iOS 13 fullscreen",
+        bodyHtml = "<p>In iOS 13 there is a new behaviour for modal view controller when being presented.</p>",
+        tags = listOf("ios", "viewcontroller", "modalviewcontroller"),
         ownerName = "Lewis Dholpin",
         ownerAvatarUrl = null,
         ownerReputation = 2382,
@@ -255,7 +307,7 @@ private fun DetailScreenPreview() {
         Answer(
             id = 1L,
             questionId = 1L,
-            bodyHtml = "I add an information that could be useful for someone...",
+            bodyHtml = "<p>I add an information that could be useful for someone...</p>",
             ownerName = "Lewis Dholpin",
             ownerAvatarUrl = null,
             ownerReputation = 2382,
@@ -266,11 +318,11 @@ private fun DetailScreenPreview() {
     )
     StackOverflowTheme {
         DetailScreen(
-            question = sampleQuestion,
-            answers = sampleAnswers,
-            selectedSort = AnswerSort.VOTES,
-            onSortSelected = {},
+            uiState = DetailUiState.Success(sampleQuestion, sampleAnswers, AnswerSort.VOTES),
             onBackClick = {},
+            onSortSelected = {},
+            onRetry = {},
+            onMoreInfoClick = {},
         )
     }
 }

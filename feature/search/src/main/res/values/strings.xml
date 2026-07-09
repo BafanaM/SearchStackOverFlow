@@ -9,4 +9,7 @@
     <string name="search_votes_count">%1$d votes</string>
     <string name="search_views_count">%1$d views</string>
     <string name="search_asked_by_prefix">asked %1$s by</string>
+    <string name="search_recent_searches_title">Recent Searches</string>
+    <string name="search_recent_searches_clear">Clear</string>
+    <string name="search_generic_error">Something went wrong</string>
 </resources>
