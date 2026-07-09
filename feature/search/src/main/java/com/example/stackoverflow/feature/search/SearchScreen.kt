@@ -57,6 +57,7 @@ fun SearchScreen(
     onQuestionClick: (Long) -> Unit,
 ) {
     Scaffold(
+        modifier = Modifier.padding(Dimens.SpacingXS),
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
